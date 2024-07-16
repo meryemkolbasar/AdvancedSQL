@@ -8,12 +8,12 @@ if condition then
 	statement;
 end if;
 */
--- Task : 0 id li filmi bulalım eğer yoksa ekrana uyarı yazısı verelim
+-- Task : Find film with id 0, if not found, display a warning message
 
 do $$
 declare
 	selected_film film%rowtype;
-	input_film_id film.id%type :=0;
+	input_film_id film.id%type := 0;
 	
 begin
 	select * from film
@@ -21,7 +21,7 @@ begin
 	where id = input_film_id;
 	
 	if not found then
-		raise notice 'Girdiginiz id li film bulunamadi : %',input_film_id;
+		raise notice 'Film with id % not found.', input_film_id;
 	end if;
 	
 end $$;
@@ -40,27 +40,26 @@ end $$;
 	end if;
 */
 
---Task : 2 id li filmi bulalım, eğer yoksa ekrana uyarı yazalım, varsa da ismini ekrana yazalım
+--Task : Find film with id 2, if not found, display a warning message, otherwise, print its title
 
 do $$
 declare
 	selected_film  film%rowtype;
-	input_film_id film.id%type :=2;
+	input_film_id film.id%type := 2;
 begin
 	select * from film
 	into selected_film
-	where id=input_film_id;
+	where id = input_film_id;
 	
 	
 	if not found then
-		raise notice 'Girmis oldugunuz id li film bulunamadi : %',input_film_id;
+		raise notice 'Film with id % not found.', input_film_id;
 	else
-		raise notice 'Filmin ismi : %',selected_film.title;
+		raise notice 'Film title: %', selected_film.title;
 	end if;
 end $$;
 
---Task : Eğer film tablosu bos degilse (count methodu ile) film tablosuna id, title
---degerlerini ayarlayarak yeni veri girisi yapan kodu yazalim
+--Task : If the film table is not empty (using count method), insert id and title into the film table for new data entry
 
 do $$
 declare
@@ -71,12 +70,12 @@ begin
 	into count_rows;
 	
 	if count_rows > 0 then
-	insert into film (id,title)
-	values (5,'Kara Şahin Düştü');
-	raise notice 'Yeni film eklendi';
+	insert into film (id, title)
+	values (5, 'Kara Şahin Düştü');
+	raise notice 'New film added.';
 	
 	else
-		raise notice 'Film tablosu boş';
+		raise notice 'Film table is empty.';
 	end if;
 	
 end $$;
@@ -99,10 +98,10 @@ end $$;
 		else_statement;
 	end if;
 */
-/* 	Task : 1 id li film varsa ;
-			süresi 50 dakikanın altında ise Short,
-			50<length<120 ise Medium,
-			length>120 ise Long yazalım
+/* 	Task : If film with id 1 exists ;
+			if length < 50 then Short,
+			if 50 < length < 120 then Medium,
+			if length > 120 then Long
 */
 
 do $$
@@ -112,22 +111,22 @@ declare
 begin
 	select * from film
 	into v_film
-	where id=3;
+	where id = 3;
 	
 	if not found then
-		raise notice 'Film bulunamadi';
+		raise notice 'Film not found.';
 	else
-		if v_film.length > 0 and v_film.length <=50 then
-			len_description='Kisa';
-			elseif v_film.length>50 and v_film.length <120 then
-			len_description='Orta';
+		if v_film.length > 0 and v_film.length <= 50 then
+			len_description = 'Short';
+			elseif v_film.length > 50 and v_film.length < 120 then
+			len_description = 'Medium';
 			elsif v_film.length >= 120 then
-			len_description='Uzun';
+			len_description = 'Long';
 			else
-			len_description='Tanimsiz';
+			len_description = 'Undefined';
 		end if;
 		
-	raise notice '% filminin suresi : % ',v_film.title, len_description;
+	raise notice '% film duration : % ', v_film.title, len_description;
 	end if;
 			
 end $$;
@@ -147,30 +146,30 @@ else_statements
 end case;
 */
 
--- Task : Filmin türüne göre çocuklara uygun olup olmadığını ekrana yazalım
+-- Task : Based on the film genre, determine if it's suitable for children and print the appropriate message
 
 do $$
 declare
-	tur film.type%type;
-	uyari varchar(50);
+	genre film.type%type;
+	notification varchar(50);
 begin
 	select type
 	from film
-	into tur
-	where id=4;
+	into genre
+	where id = 4;
 	
 	if found then
-		case tur
-			when 'Korku' then
-				uyari='Çocuklar için uygun değil';
-			when 'Macera' then
-				uyari='Çocuklar için uygun';
-			when 'Animasyon' then
-				uyari='Çocuklar için tavsiye edilir';
+		case genre
+			when 'Horror' then
+				notification = 'Not suitable for children';
+			when 'Adventure' then
+				notification = 'Suitable for children';
+			when 'Animation' then
+				notification = 'Recommended for children';
 			else
-				uyari='Tanimlanmadi';
+				notification = 'Undefined';
 		end case;
-		raise notice '%',uyari;
+		raise notice '%', notification;
 	end if;
 	
 end $$;
@@ -181,18 +180,18 @@ end $$;
 
 --syntax
 /*
-<<label>> --1.ornek
+<<label>> --1.example
 loop
 	statement;
 end loop;
---loopu sonlandırmak icin if yapisi kullanilabilir
-<<label>>  2.ornek
+--To end the loop, use if statement
+<<label>> --2.example
 loop
 	statements;
 	if condition then
-	exit; --loop dan cikilmasini saglar
+	exit; --exits the loop
 end loop;
---nested loop --3.ornek
+--nested loop --3.example
 <<outer>>
 loop
 	statements;
@@ -200,94 +199,30 @@ loop
 	loop
 	....
 	exit --inner
-	end loop --inner loop endi
+	end loop --end of inner loop
 exit;
-end loop; --outer loop endi
+end loop; --end of outer loop
 */
 
--- Task : Fibonacci serisinde, belli bir sıradaki sayıyı ekrana getirelim
+-- Task : In Fibonacci series, display a specific number
 
 do $$
 declare
-	n integer :=6;  --fibonacci serisinde n.sayiyi getir
-	counter integer :=0; --0 dan basla istenen indise kadar git
-	i integer :=0;  --kendinden onceki 2 sayidan 1.si
-	j integer :=1;  --kendinden onceki 2 sayidan 2.si
-	fib integer :=0; --ekrana yansiyacak sayi
+	n integer := 6;  --display nth number in fibonacci series
+	counter integer := 0; --start from 0 to reach the desired index
+	i integer := 0;  --1st from the previous 2 numbers
+	j integer := 1;  --2nd from the previous 2 numbers
+	fib integer := 0; --number to be displayed
 begin
-	if(n<1) then
-		fib:=0;
+	if(n < 1) then
+		fib := 0;
 	end if;
 	
 	loop
-		exit when counter=n;
-		counter:=counter + 1;
-		select j,i+j into i,j; --j'yi i'ye, i+j'yi j' ye koy ---1,1,2,3,5,8...
+		exit when counter = n;
+		counter := counter + 1;
+		select j, i+j into i, j; --assign j to i, i+j to j ---1,1,2,3,5,8...
 	end loop;
-	fib :=i;
-	raise notice '%. siradaki Fibonacci Sayisi : %',n,fib;
+	fib := i;
+	raise notice '%th Fibonacci Number : %', n, fib;
 end $$;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
