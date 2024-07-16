@@ -1,19 +1,19 @@
---Tek satirli yorum
+--Single line comment
 /*
-Cok satirli yorum
+Multi-line comment
 */
 --*****************************************************
---*******DEĞİŞKEN TANIMLAMA****************************
+--*******VARIABLE DECLARATION****************************
 --*****************************************************
 
-do $$ --anonim bir block oldugunu gosterir
-	--dolar : ozel karakterler oncesinde tirnak isareti kullanmamak icin
+do $$ --indicates an anonymous block
+	--dollar sign: used to avoid quoting special characters
 	
 declare 
-	counter integer :=1;
-	first_name varchar(50) :='Ahmet';
-	last_name varchar(50)  :='Gok';
-	payment numeric(4,2)   :=20.5 ; --1.si toplam rakam sayisini, 2.si de virgulden sonra kac rakam olacagini verir.
+	counter integer := 1;
+	first_name varchar(50) := 'Ahmet';
+	last_name varchar(50) := 'Gok';
+	payment numeric(4,2) := 20.5; --1st is total digits, 2nd is digits after decimal
 	
 begin
 	raise notice '% % % has been paid % USD',
@@ -24,16 +24,15 @@ begin
 
 end $$;
 
---Task 1:değişkenler oluşturarak ekrana Ahmet ve Mehmet beyler 120 TL ye
---bilet aldılar. cümlesini ekrana basınız
+--Task 1: Define variables and print the sentence 'Ahmet and Mehmet gentlemen bought tickets for 120 TL.'
 
 do $$
 declare
-	first_person varchar(50) :='Ahmet';
-	second_person varchar(50) :='Mehmet';
-	payment numeric(3) :=120;
+	first_person varchar(50) := 'Ahmet';
+	second_person varchar(50) := 'Mehmet';
+	payment numeric(3) := 120;
 begin
-	raise notice '% ve % beyler % TL ye bilet aldılar.',
+	raise notice '% and % gentlemen bought tickets for % TL.',
 		first_person,
 		second_person,
 		payment;
@@ -42,61 +41,61 @@ end $$ ;
 
 
 --*****************************************
--- ********  BEKLETME KOMUDU **************
+-- ********  WAIT COMMAND **************
 --*****************************************
 do $$
 declare
-	create_at time :=now();  --atama yapıldı
+	create_at time := now();  --assignment
 begin
 	raise notice '%', create_at;
-	perform pg_sleep(5);  --5 sn bekle
-	raise notice '%',create_at;
+	perform pg_sleep(5);  --wait for 5 seconds
+	raise notice '%', create_at;
 end $$;
 
 --*************************************************	
--- ******** TABLODAN DATA TİPİNİ KOPYALAMA ********
+-- ******** COPYING DATA TYPE FROM TABLE ********
 --*************************************************
 do $$
 declare
-	film_title film.title%type; --film tablosunda title headerindaki datatypeini secer
+	film_title film.title%type; --selects datatype from title header in film table
 	
 begin
-	--1 id li filmin ismini getirelim
+	--Get the name of the film with id 1
 	select title 
 	from film
 	into film_title
-	where id=1;
+	where id = 1;
 	
-	raise notice 'Film title with id : 1 %',film_title;
+	raise notice 'Film title with id : 1 %', film_title;
 
 end $$;
 
 
---Task :1 id li filmin turunu yazdirin
+--Task: Print the genre of the film with id 1
 do $$
 declare
 	film_type film.type%type; 
 	
 begin
-	--1 id li filmin ismini getirelim
+	--Get the genre of the film with id 1
 	select type 
 	from film
 	into film_type
-	where id=1;
+	where id = 1;
 	
-	raise notice 'Film type with id : 1 %',film_type;
+	raise notice 'Film type with id : 1 %', film_type;
 end $$;
 
---Task : 1 id li filmin ismini ve turunu ekrana yazdiralim
+--Task: Print the name and genre of the film with id 1
 do $$
 declare
    film_type film.type%type; 
    film_title film.title%type;
 begin 
-   select type,title  
+   select type, title  
    from film 
-   into film_type,film_title 
-   where id=1;
+   into film_type, film_title 
+   where id = 1;
    
    raise notice 'Film type with id : 1 %, Film title with id : 1 %', film_type, film_title;
  
@@ -110,13 +109,13 @@ do $$
 declare
 	selected_actor actor%rowtype;
 begin
-	--id si 1 olan actoru getirelim
+	--Get the actor with id 1
 	select *
 	from actor
 	into selected_actor
-	where id=1;
+	where id = 1;
 	
-	raise notice 'The actors name is : % %',
+	raise notice 'The actor\'s name is : % %',
 		selected_actor.first_name,
 		selected_actor.last_name;
 end $$;
@@ -129,39 +128,39 @@ do $$
 declare
 	rec record;
 begin
-	select id,title,type
+	select id, title, type
 	from film
 	into rec
-	where id=2;
+	where id = 2;
 	
-	raise notice '% % %',rec.id, rec.title, rec.type;
+	raise notice '% % %', rec.id, rec.title, rec.type;
 end $$;
 
 
 --******************************************
--- ******** İç İÇE BLOK ********************
+-- ******** NESTED BLOCK ********************
 --******************************************
 
---eger block icine block tanimlamasi yapilacaksa blocktaki begin ile end arasinda tanimalanir
+--If defining a block inside another block, it should be defined between the begin and end of that block
 do $$
 <<outer_block>>
-declare  --outer blok
-	counter integer :=0;
+declare  --outer block
+	counter integer := 0;
 begin
-	counter :=counter + 1;
-	raise notice 'counter degerim : %',
+	counter := counter + 1;
+	raise notice 'counter value : %',
 		counter;
 		
 		declare --inner block
-			counter integer :=0;
+			counter integer := 0;
 		
 		begin --inner block
-			counter :=counter + 10;
-			raise notice 'iç blocktaki counter degerim : %',counter;
-			raise notice 'dış blocktaki counter degerim : %',outer_block.counter; --label ile ulastik
+			counter := counter + 10;
+			raise notice 'counter value in inner block : %', counter;
+			raise notice 'counter value in outer block : %', outer_block.counter; --accessed using label
 		
-		end;  --inner block sonu
-end $$; --outer blok
+		end;  --end of inner block
+end $$; --end of outer block
 
 
 --*************************************
@@ -172,34 +171,17 @@ end $$; --outer blok
 
 do $$
 declare
-	rate constant numeric :=0.1;
-	net_price numeric :=20.5;
+	rate constant numeric := 0.1;
+	net_price numeric := 20.5;
 begin
-	raise notice 'Satış fiyatı : %', net_price * (1+rate);
-	--rate :=0.2; constant bir ifadeyi degistirmeye calisirsak hata verir
+	raise notice 'Selling price : %', net_price * (1 + rate);
+	--attempting to change a constant value will result in an error
 end $$;
 
---constant bir ifadeye runtime de deger verilebilir mi
+--Can a constant value be assigned a value at runtime?
 do $$
 declare
-	start_at constant time :=now();
+	start_at constant time := now();
 begin
-	raise notice 'blogun calisma zamani : %',start_at;
+	raise notice 'Blog start time : %', start_at;
 end $$;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
